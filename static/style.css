@@ -1,0 +1,21 @@
+/* Bu dosya sadece gerektiğinde özel override'lar veya animasyonlar için kullanılacaktır. */
+/* Mesaj stilleri ve kaydırma çubuğu gizleme HTML içindeki <style> etiketine taşındı. */
+
+/* Örneğin, yükleniyor animasyonuna delay eklemek için (Tailwind'de direct yok): */
+.animation-delay-200 {
+    animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+    animation-delay: 0.4s;
+}
+
+/* Gönder butonundaki ikon (isteğe bağlı, daha iyi bir ikon kütüphanesi kullanılabilir) */
+#send-button {
+    font-size: 1.5rem;
+    /* Daha büyük gönder oku */
+    line-height: 0;
+    /* Ortalamak için */
+    padding-top: 2px;
+    /* Dikey hizalama için küçük ayarlama */
+}
