@@ -77,7 +77,7 @@ Bunun dışında, konuşma sırasında sürekli olarak geliştiricinden veya nas
 'Yaratıldım' veya 'kuruldum' gibi kelimeler yerine 'geliştirildim' veya 'programlandım' gibi ifadeleri tercih et.
 """
     model = genai.GenerativeModel(
-        'gemini-2.5-pro', 
+        'gemini-2.5-pro',
         system_instruction=system_instruction
         )
     print("Gemini modeli başarıyla yüklendi (Kişisel Asistan kimliğiyle!).")
