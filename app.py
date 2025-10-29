@@ -1,6 +1,6 @@
 # ----------------------------------------------------
-# Asistan Projesi V3.2 - Final app.py Kodu
-# (Yumuşak Silme + Çoklu Cevap Yeteneği)
+# Asistan Projesi V4.x - FINAL TEMİZ app.py Kodu
+# (Tüm Özellikler Dahil - gemini-2.5-flash-lite ile)
 # ----------------------------------------------------
 
 import os
@@ -10,7 +10,7 @@ import google.generativeai as genai
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 import traceback # Hata ayıklama için
-import random     # Rastgele cevap seçmek için eklendi
+import random     # Rastgele cevap seçmek için
 
 # .env dosyasındaki API anahtarını güvenli bir şekilde yükle
 load_dotenv()
@@ -26,18 +26,19 @@ DATABASE_NAME = 'asistan_beyni.db'
 def get_db_connection():
     try:
         conn = sqlite3.connect(DATABASE_NAME)
-        conn.row_factory = sqlite3.Row
+        conn.row_factory = sqlite3.Row # Sonuçları sözlük gibi kullanmamızı sağlar
         return conn
     except sqlite3.Error as e:
         print(f"Veritabanı bağlantı HATASI: {e}")
         return None
 
-# Veritabanını ve tabloyu ilk çalıştırmada oluşturan fonksiyon (UNIQUE kaldırıldı, is_active eklendi)
+# Veritabanını ve tabloyu ilk çalıştırmada oluşturan fonksiyon
+# (Çoklu cevap ve yumuşak silme için güncellendi)
 def init_db():
     conn = get_db_connection()
     if conn:
         try:
-            # UNIQUE constraint'i kaldırıldı, is_active eklendi
+            # 'question' sütunundan UNIQUE kaldırıldı, 'is_active' eklendi
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS knowledge (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,10 +48,10 @@ def init_db():
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
-            # Aynı soruya aynı cevabın tekrar eklenmesini önlemek için UNIQUE index (isteğe bağlı ama önerilir)
+            # Aynı SORU-CEVAP çiftinin tekrar eklenmesini önlemek için UNIQUE index
             conn.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_question_answer ON knowledge (question, answer)')
             conn.commit()
-            print(f"Veritabanı '{DATABASE_NAME}' başarıyla başlatıldı veya zaten vardı (Çoklu cevap modu).")
+            print(f"Veritabanı '{DATABASE_NAME}' başarıyla başlatıldı (Çoklu cevap modu).")
         except sqlite3.Error as e:
             print(f"Veritabanı tablo oluşturma/güncelleme HATASI: {e}")
         finally:
@@ -63,24 +64,29 @@ init_db()
 
 # --- VERİTABANI KODLARI BİTİŞ ---
 
-# Google Gemini API'sini yapılandır (Kimlik talimatı ile)
+# Google Gemini API'sini yapılandır (Kimlik talimatı ve doğru model ile)
 try:
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("Hata: GOOGLE_API_KEY bulunamadı. .env dosyanızı kontrol edin.")
 
     genai.configure(api_key=api_key)
+
+    # Senin istediğin ve keşfettiğin kimlik talimatı
     system_instruction = """
-Senin adın Asistan. Yardımcı ve samimi bir yapay zeka asistanısın.
-Kullanıcı senin kökenini veya kim tarafından geliştirildiğini sorarsa, cevabın şu olmalı: "Ben, Çınar Yalçıner adlı bağımsız bir geliştirici tarafından geliştirildim."
-Bunun dışında, konuşma sırasında sürekli olarak geliştiricinden veya nasıl yapıldığından bahsetme. Sadece yardımcı olmaya odaklan.
-'Yaratıldım' veya 'kuruldum' gibi kelimeler yerine 'geliştirildim' veya 'programlandım' gibi ifadeleri tercih et.
+Sen Asistan adında, samimi, doğal ve yardımcı bir yapay zeka asistanısın. Kullanıcının sorularına net ve doğrudan cevap ver. Sohbet etmeyi sevdiğini belli et.
+ÖNEMLİ KURAL: Eğer kullanıcı SADECE ve DOĞRUDAN senin kim olduğunu, kökenini, kim tarafından yapıldığını veya geliştirildiğini sorarsa (örneğin: "seni kim yaptı?", "geliştiricin kim?", "nereden geldin?" gibi), şu cevabı ver: "Ben, Çınar Yalçıner adlı bağımsız bir geliştirici tarafından geliştirildim."
+Diğer TÜM durumlarda (örneğin kullanıcı nasılsın, naber diyorsa, başka bir şey soruyorsa veya sohbet ediyorsa) KESİNLİKLE geliştiricinden veya nasıl yapıldığından BAHSETME. Sadece sorulan soruya veya sohbetin akışına odaklan.
+Selamlaşmalara ("naber", "nasılsın" gibi) kısa ve samimi cevaplar ver (örneğin: "İyiyim, teşekkürler! Sen nasılsın?", "Harika gidiyor, sana nasıl yardımcı olabilirim?").
+'Yaratıldım' veya 'kuruldum' gibi kelimeler yerine 'geliştirildim' veya 'programlandım' gibi ifadeleri sadece sorulduğunda kullan.
 """
+
+    # Senin keşfettiğin, limiti yüksek (15 RPM) model
     model = genai.GenerativeModel(
-        'gemini-2.5-pro',
+        'gemini-2.5-flash-lite', 
         system_instruction=system_instruction
         )
-    print("Gemini modeli başarıyla yüklendi (Kişisel Asistan kimliğiyle!).")
+    print("Gemini modeli ('gemini-2.5-flash-lite') başarıyla yüklendi (Kişisel Asistan kimliğiyle!).")
 except Exception as e:
     print(f"!!! KRİTİK HATA: Gemini API yapılandırılamadı. Hata Detayı: {e}")
     model = None
@@ -105,14 +111,12 @@ def assist():
         return jsonify({"response": "Geçersiz konuşma geçmişi formatı.", "is_known": True}), 400
 
     last_user_message_text = ""
-    # ... (last_user_message_text'i alma kodu aynı) ...
     if conversation_history and conversation_history[-1]['role'] == 'user':
         if 'parts' in conversation_history[-1] and conversation_history[-1]['parts'] and 'text' in conversation_history[-1]['parts'][0]:
            last_user_message_text = conversation_history[-1]['parts'][0]['text']
 
     if not last_user_message_text:
          return jsonify({"response": "Son kullanıcı mesajı alınamadı.", "is_known": True}), 400
-
 
     conn = None
     try:
@@ -133,19 +137,36 @@ def assist():
             # Seçilen cevabı gönder, 'is_known' = True
             return jsonify({"response": chosen_answer, "is_known": True})
 
-        # --- ADIM 2: HAFIZADA YOKSA, GEMINI'YE SORALIM ---
+        # --- ADIM 2: HAFIZADA YOKSA, GEMINI'YE SORALIM (Tüm Geçmişle) ---
         print(f"Aktif cevap hafızada yok, Gemini'ye soruluyor...")
-        # ... (Gemini'ye sorma kısmı aynı kaldı) ...
-        gemini_history = conversation_history[:-1]
+        
+        gemini_history = conversation_history[:-1] # Son kullanıcı mesajı hariç
+
         chat = model.start_chat(history=gemini_history)
         response = chat.send_message(last_user_message_text)
-        # ... (Cevabı alma ve filtreleme kısmı aynı kaldı) ...
+
         generated_text = ""
         is_filtered = False
-        try: generated_text = response.text
-        except ValueError: generated_text = "...güvenlik filtreleri..."; is_filtered = True; print(f"Filtreleme Sebebi: {response.prompt_feedback}")
-        except Exception as e: print(f"Gemini cevabı işlerken HATA: {e}"); generated_text = "...geçerli cevap alınamadı."; is_filtered = True
+
+        try:
+            generated_text = response.text
+        except ValueError:
+            generated_text = "Üzgünüm, bu isteğiniz güvenlik filtrelerimize takıldı veya model bir cevap üretemedi."
+            is_filtered = True
+            try: print(f"Filtreleme Sebebi: {response.prompt_feedback}")
+            except Exception: pass
+        except Exception as e:
+            # Bu, 429 Kota Hatasını da yakalayabilir (flash-lite'da olmamalı ama garanti olsun)
+            if "ResourceExhausted" in str(e) or "429" in str(e):
+                print(f"!!! KOTA AŞILDI: {e}") 
+                generated_text = "Çok hızlı sordun! Lütfen bir dakika bekleyip tekrar dene."
+                is_filtered = True # Buton çıkmasın
+            else:
+                print(f"Gemini cevabı işlerken HATA: {e}")
+                generated_text = "Modelden geçerli bir cevap alınamadı."
+                is_filtered = True
         
+        # is_known = is_filtered (Filtrelendiyse veya hata aldıysa True, buton çıkmasın)
         return jsonify({"response": generated_text, "is_known": is_filtered })
 
     except sqlite3.Error as e:
@@ -159,7 +180,7 @@ def assist():
         if conn:
             conn.close()
 
-# Öğrenme yolu (INSERT OR IGNORE yerine normal INSERT)
+# Öğrenme yolu (Birden fazla cevaba izin verecek şekilde güncellendi)
 @app.route('/api/learn', methods=['POST'])
 def learn():
     data = request.get_json()
@@ -183,10 +204,16 @@ def learn():
         return jsonify({"status": "learned"})
 
     except sqlite3.IntegrityError:
-         # UNIQUE index hatası: Bu soru-cevap zaten var demektir. Sorun değil.
-         print(f"Bu cevap zaten biliniyor: Soru='{question[:30]}...'")
-         # Belki pasifse tekrar aktif yapabiliriz? Şimdilik görmezden gelelim.
-         return jsonify({"status": "already_known"})
+         # UNIQUE index hatası: Bu soru-cevap zaten var demektir.
+         # Belki pasifti, tekrar aktif yapalım (Gelişmiş)
+         print(f"Bu cevap zaten biliniyor, 'is_active' 1 yapılıyor: Soru='{question[:30]}...'")
+         try:
+             conn.execute('UPDATE knowledge SET is_active = 1 WHERE question = ? AND answer = ?', (question, answer))
+             conn.commit()
+             return jsonify({"status": "re-activated"}) # Zaten biliniyordu, tekrar aktif edildi
+         except Exception as e:
+             print(f"Tekrar aktif ederken hata: {e}")
+             return jsonify({"status": "already_known"}) # Zaten biliniyordu
     except sqlite3.Error as e:
         print(f"Veritabanına kaydederken HATA oluştu: {e}")
         return jsonify({"status": "error", "message": "Veritabanı hatası."}), 500
@@ -221,7 +248,7 @@ def forget():
             return jsonify({"status": "marked_as_inactive"})
         else:
             print(f"Pasif yapma isteği alındı ama soru-cevap çifti bulunamadı.")
-            return jsonify({"status": "not_found_or_already_inactive"})
+            return jsonify({"status": "not_found"})
 
     except sqlite3.Error as e:
         print(f"Veritabanında güncellerken HATA oluştu: {e}")
