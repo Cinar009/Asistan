@@ -11,7 +11,6 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
-        /* CSS Değişkenleri */
         :root {
             --bg-color: #f7f7f7;
             --container-bg: #ffffff;
@@ -52,7 +51,6 @@
             --sidebar-icon: #9ca3af;
         }
 
-        /* Temel Stiller */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -60,26 +58,22 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Sidebar Stilleri (Mobil için başlangıçta gizli, transition eklendi) */
         #sidebar {
             background-color: var(--sidebar-bg);
             color: var(--sidebar-text);
             transition: transform 0.3s ease-in-out, background-color 0.3s ease;
             transform: translateX(-100%);
+            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        html.dark #sidebar {
+            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.4);
         }
 
         #sidebar.open {
             transform: translateX(0%);
-            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.1);
         }
 
-        /* Açıkken gölge */
-        html.dark #sidebar.open {
-            box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.4);
-        }
-
-
-        /* Overlay Stilleri (Başlangıçta gizli, transition eklendi) */
         #sidebar-overlay {
             transition: opacity 0.3s ease-in-out;
             opacity: 0;
@@ -91,7 +85,6 @@
             pointer-events: auto;
         }
 
-        /* Diğer Stiller */
         .chat-item {
             color: var(--sidebar-text);
         }
@@ -293,7 +286,6 @@
             color: var(--subtle-text);
         }
 
-        /* Color transition eklendi */
         .action-button:hover {
             transform: scale(1.15);
             opacity: 1;
@@ -320,7 +312,6 @@
             opacity: 1 !important;
         }
 
-        /* Masaüstü için Sidebar Stilleri (lg = 1024px) */
         @media (min-width: 1024px) {
             #sidebar {
                 transform: translateX(0%);
@@ -329,7 +320,6 @@
                 box-shadow: none;
             }
 
-            /* Gölge kaldırıldı */
             #sidebar-overlay {
                 display: none;
             }
@@ -342,7 +332,6 @@
 </head>
 
 <body class="flex h-screen bg-[var(--bg-color)] text-[var(--text-color)] antialiased overflow-hidden">
-
     <div id="sidebar"
         class="fixed lg:static z-30 inset-y-0 left-0 w-64 flex-shrink-0 border-r border-[var(--border-color)] flex flex-col p-3">
         <button id="new-chat-button"
@@ -356,13 +345,9 @@
                 <span class="material-symbols-rounded text-lg">dark_mode</span> <span>Temayı Değiştir</span> </button>
         </div>
     </div>
-
     <div id="sidebar-overlay" class="fixed inset-0 z-20 bg-black bg-opacity-25 lg:hidden" aria-hidden="true"></div>
-
-
     <div class="flex-grow flex flex-col h-screen overflow-hidden">
         <div class="container relative flex flex-col h-full w-full p-0">
-
             <div
                 class="flex items-center justify-between p-3 sm:p-4 border-b border-[var(--border-color)] flex-shrink-0">
                 <div class="flex items-center space-x-2 sm:space-x-3">
@@ -378,9 +363,7 @@
                 </div>
                 <div></div>
             </div>
-
             <div id="response-area" class="flex-grow p-4 sm:p-6 overflow-y-auto"> </div>
-
             <div class="input-area-wrapper px-3 pt-2 pb-3 sm:px-6 sm:pt-4 sm:pb-6 flex-shrink-0">
                 <div id="loading" class="hidden flex justify-center items-center h-6 mb-2">
                     <div class="w-2 h-2 rounded-full animate-pulse loading-dot mx-1"></div>
@@ -397,7 +380,6 @@
             </div>
         </div>
     </div>
-
     <script src="/static/script.js"></script>
 </body>
 

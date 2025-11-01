@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistan - Yönetici Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body { background-color: #f3f4f6; }
+        html.dark body { background-color: #111827; }
+        /* Pasif (inactive) satırları soluklaştır */
+        tr.is-inactive { opacity: 0.5; background-color: #fef2f2; }
+        html.dark tr.is-inactive { background-color: #4b5563; opacity: 0.4; }
+        /* Aksiyon butonları için animasyon */
+        .action-btn { transition: all 0.2s ease; }
+        .action-btn:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body class="dark:bg-gray-900">
+    <div class="container mx-auto p-4 sm:p-8">
+        
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yönetici Paneli (Beyin Hafızası)</h1>
+            
+            <div class="flex space-x-2">
+                <a href="{{ url_for('admin_add') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <span class="material-symbols-rounded mr-2 text-base">add_circle</span>
+                    Yeni Kayıt Ekle
+                </a>
+                <a href="{{ url_for('admin_logout') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <span class="material-symbols-rounded mr-2 text-base">logout</span>
+                    Çıkış Yap
+                </a>
+            </div>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 px-4 py-3 rounded relative 
+                                {% if category == 'error' %} bg-red-100 border border-red-400 text-red-700 
+                                {% else %} bg-green-100 border border-green-400 text-green-700 {% endif %}" 
+                         role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-5 flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-900 rounded-full">
+                    <span class="material-symbols-rounded text-blue-600 dark:text-blue-300">inventory_2</span>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Toplam Kayıt</div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total | default(0) }}</div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-5 flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-green-100 dark:bg-green-900 rounded-full">
+                    <span class="material-symbols-rounded text-green-600 dark:text-green-300">check_circle</span>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aktif Cevaplar</div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.active | default(0) }}</div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-5 flex items-center space-x-4">
+                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-red-100 dark:bg-red-900 rounded-full">
+                    <span class="material-symbols-rounded text-red-600 dark:text-red-300">cancel</span>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pasif Cevaplar</div>
+                    <div class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.inactive | default(0) }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto bg-white dark:bg-gray-800 shadow rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider 
+                                        bg-gray-100 dark:bg-gray-700 
+                                        text-gray-900 dark:text-white">Durum</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider 
+                                        bg-gray-100 dark:bg-gray-700 
+                                        text-gray-900 dark:text-white">Beyin Modu</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider 
+                                        bg-gray-100 dark:bg-gray-700 
+                                        text-gray-900 dark:text-white">Soru</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider 
+                                        bg-gray-100 dark:bg-gray-700 
+                                        text-gray-900 dark:text-white">Cevap</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider 
+                                        bg-gray-100 dark:bg-gray-700 
+                                        text-gray-900 dark:text-white">Eklenme Tarihi</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider 
+                                        bg-gray-100 dark:bg-gray-700 
+                                        text-gray-900 dark:text-white">Eylemler</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for item in knowledge %}
+                    <tr class="{% if item.is_active == 0 %} is-inactive {% endif %} hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if item.is_active == 1 %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Pasif</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if item.is_strict == 1 %}
+                                <span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                    <span class="material-symbols-rounded text-xs mr-1">lock</span>Birebir
+                                </span>
+                            {% else %}
+                                <span class="px-2 inline-flex items-center text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                    <span class="material-symbols-rounded text-xs mr-1">auto_awesome</span>İlham
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 dark:text-white" title="{{ item.question }}">{{ item.question[:40] }}{{ '...' if item.question|length > 40 else '' }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 dark:text-white" title="{{ item.answer }}">{{ item.answer[:60] }}{{ '...' if item.answer|length > 60 else '' }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {{ item.formatted_timestamp | default('Bilinmiyor') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{{ url_for('admin_edit', id=item.id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 action-btn" title="Düzenle">
+                                <span class="material-symbols-rounded">edit</span>
+                            </a>
+                            {% if item.is_active == 1 %}
+                                <a href="{{ url_for('admin_toggle_active', id=item.id) }}" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 ml-4 action-btn" title="Pasif Yap">
+                                    <span class="material-symbols-rounded">visibility_off</span>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('admin_toggle_active', id=item.id) }}" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 ml-4 action-btn" title="Aktif Yap">
+                                    <span class="material-symbols-rounded">visibility</span>
+                                </a>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('admin_delete', id=item.id) }}" 
+                               class="text-gray-400 hover:text-red-600 dark:text-gray-600 dark:hover:text-red-400 ml-4 action-btn" 
+                               title="Kalıcı Olarak Sil"
+                               onclick="return confirm('Bu kaydı TAMAMEN silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')">
+                                <span class="material-symbols-rounded">delete_forever</span>
+                            </a>
+                            </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">
+                            Hafıza defterinde (knowledge tablosu) henüz 'Beğenilmiş' (👍) cevap bulunmuyor.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
