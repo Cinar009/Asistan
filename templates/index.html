@@ -58,6 +58,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* Geri kalan tüm stiller aynı kaldı... */
         #sidebar {
             background-color: var(--sidebar-bg);
             color: var(--sidebar-text);
@@ -332,6 +333,7 @@
 </head>
 
 <body class="flex h-screen bg-[var(--bg-color)] text-[var(--text-color)] antialiased overflow-hidden">
+
     <div id="sidebar"
         class="fixed lg:static z-30 inset-y-0 left-0 w-64 flex-shrink-0 border-r border-[var(--border-color)] flex flex-col p-3">
         <button id="new-chat-button"
@@ -340,12 +342,27 @@
         <div class="flex-grow overflow-y-auto pr-1">
             <ul id="chat-list" class="space-y-1"></ul>
         </div>
-        <div class="mt-auto border-t border-[var(--border-color)] pt-3"> <button id="theme-toggle"
+
+        <div class="mt-auto border-t border-[var(--border-color)] pt-3">
+            <div class="px-3 py-2 flex items-center space-x-2">
+                <span class="material-symbols-rounded text-lg text-[var(--subtle-text)]">person</span>
+                <span class="text-sm font-medium text-[var(--text-color)] truncate" title="{{ user_email }}">
+                    {{ user_email }} </span>
+            </div>
+
+            <button id="theme-toggle"
                 class="w-full px-3 py-2 rounded-lg text-sm font-medium hover:bg-[var(--sidebar-hover-bg)] transition-colors duration-200 flex items-center space-x-2 text-[var(--subtle-text)] hover:text-[var(--text-color)]">
                 <span class="material-symbols-rounded text-lg">dark_mode</span> <span>Temayı Değiştir</span> </button>
+
+            <a href="{{ url_for('logout') }}" id="logout-button"
+                class="w-full px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200 flex items-center space-x-2 text-red-600 dark:text-red-400">
+                <span class="material-symbols-rounded text-lg">logout</span> <span>Çıkış Yap</span>
+            </a>
         </div>
     </div>
+
     <div id="sidebar-overlay" class="fixed inset-0 z-20 bg-black bg-opacity-25 lg:hidden" aria-hidden="true"></div>
+
     <div class="flex-grow flex flex-col h-screen overflow-hidden">
         <div class="container relative flex flex-col h-full w-full p-0">
             <div
@@ -380,7 +397,8 @@
             </div>
         </div>
     </div>
-    <script src="/static/script.js"></script>
+
+    <script src="/static/script.js" defer></script>
 </body>
 
 </html>

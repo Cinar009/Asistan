@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistan - Giriş Yap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 shadow-lg rounded-xl">
+        <div>
+            <img class="mx-auto h-12 w-auto" src="/static/favicon.png" alt="Asistan Logo">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                Hesabınıza Giriş Yapın
+            </h2>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 px-4 py-3 rounded relative 
+                                {% if category == 'error' %} bg-red-100 border border-red-400 text-red-700 
+                                {% else %} bg-green-100 border border-green-400 text-green-700 {% endif %}" 
+                         role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form class="mt-8 space-y-6" action="{{ url_for('login') }}" method="POST">
+            <div class="rounded-md shadow-sm space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">E-posta Adresi</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required
+                           class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Şifre</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required
+                           class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end">
+                <div class="text-sm">
+                    <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                        </a>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Giriş Yap
+                </button>
+            </div>
+
+            <div class="text-center text-sm">
+                <a href="{{ url_for('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                    Henüz bir hesabın yok mu? Kayıt ol
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
